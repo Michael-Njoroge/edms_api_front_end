@@ -2,20 +2,15 @@
  import { useNavigate } from 'react-router-dom';
 import OAuth from '../components/OAuth';
 import { Link } from 'react-router-dom';
-//  app.use((err,req,res,next)=>{
-//   const statusCode = err.statusCode || 500;
-//   const message = err.message || 'Internal Server Error';
-//   return res.status(statusCode).json({
-//     success: false,
-//     statusCode,
-//     message,
-//   });
-//  });
-
+import { useDispatch, useSelector } from 'react-redux';
+import { signInStart,signInSuccess,signInFailure } from '../redux/user/userSlice';
+ 
 export default function SignIn() {
   const navigate =useNavigate();
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+  // const [error, setError] = useState(null);
+  // const [loading, setLoading] = useState(false);
+  const {loading, error} = useSelector((state) => state.user);
   const [formData, setFormData] = useState({});
 const handleChange = (e) => {
   setFormData({
@@ -27,8 +22,8 @@ const handleChange = (e) => {
 const handleSubmit = async(e) => {
   e.preventDefault();
 try {
-  setLoading(true);
-  const response  = await fetch('http://127.0.0.1:8000/api/auth/login',{
+  dispatch(signInStart())
+   const response  = await fetch('http://127.0.0.1:8000/api/auth/login',{
     method:'POST',
     headers:{
       'Content-Type':'application/json',
@@ -39,16 +34,13 @@ try {
   console.log(data)
 
   if(!data.ok){
-    setLoading(false);
-    setError(data.message);
+dispatch(signInFailure(data.message));
     return;
   }
-  setLoading(false);
-  setError(null);
+dispatch(signInSuccess(data))
   navigate('/');
 } catch (error) {  
-  setLoading(false);
-  setError(error.message)
+  dispatch(signInFailure(error.message));
 }
 }
 console.log(formData)
